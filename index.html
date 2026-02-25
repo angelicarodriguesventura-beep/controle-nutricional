@@ -231,7 +231,7 @@ document.getElementById("barCarbo").style.width=Math.min(totalCarb/metaCarb*100,
 document.getElementById("barAgua").style.width=Math.min(totalAgua/metaAgua*100,100)+"%";
 }
 
-// Corpo
+// Corpo atualizado
 function salvarCorpo(){
 let peso=Number(document.getElementById("peso").value);
 let altura=Number(document.getElementById("altura").value)/100;
@@ -241,11 +241,13 @@ let pescoco=Number(document.getElementById("pescoco").value);
 
 let imc=peso/(altura*altura);
 
+// Fórmula Navy para mulheres corrigida
 let gordura=163.205*Math.log10(cintura+quadril-pescoco)-97.684*Math.log10(altura*100)-78.387;
-let massaGorda=(peso*gordura/100).toFixed(1);
-let massaMagra=(peso-massaGorda).toFixed(1);
+gordura=Math.min(Math.max(gordura,5),60); // limite realista
+let massaGorda=peso*(gordura/100);
+let massaMagra=peso-massaGorda;
 
-let registro={data:new Date().toLocaleDateString(),peso,imc:imc.toFixed(1),gordura:gordura.toFixed(1),massaGorda,massaMagra};
+let registro={data:new Date().toLocaleDateString(),peso,imc:imc.toFixed(1),gordura,grossaGorda:massaGorda,massaMagra};
 historico.unshift(registro);
 localStorage.setItem("corpo",JSON.stringify(historico));
 mostrarHistorico();
@@ -255,7 +257,7 @@ desenharGrafico();
 function mostrarHistorico(){
 let html="";
 historico.forEach(h=>{
-html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h.gordura}% | Massa Gorda: ${h.massaGorda}kg | Massa Magra: ${h.massaMagra}kg</div>`;
+html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h.gordura.toFixed(1)}% | Massa Gorda: ${h.massaGorda.toFixed(1)}kg | Massa Magra: ${h.massaMagra.toFixed(1)}kg</div>`;
 });
 document.getElementById("historico").innerHTML=html;
 }
