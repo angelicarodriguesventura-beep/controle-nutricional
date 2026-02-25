@@ -23,7 +23,8 @@ button.add:hover,button.addAlimento:hover{background:#0d6efd;}
 .subtotal{font-weight:bold; text-align:right; margin-top:5px;}
 
 /* --- Barras de progresso --- */
-.bar-container{background:#ddd;height:16px;border-radius:10px;margin:5px 0;overflow:hidden;}
+.barra-container{display:flex; flex-direction:column; gap:5px; margin:10px 0;}
+.bar-container{background:#ddd;height:16px;border-radius:10px;overflow:hidden;}
 .bar-fill{height:16px;width:0%;border-radius:10px;transition: width 0.5s;}
 .barProteina{background:#1e90ff;}
 .barCarbo{background:#ff8c00;}
@@ -54,7 +55,6 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 
 <!-- Topo com duas colunas -->
 <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px;">
-  <!-- Coluna Metas -->
   <div style="flex:1; background:#f7f9fc; padding:10px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1);">
     <h4>Metas Diárias</h4>
     <div>Proteína: <span id="metaProteinaDisplay">120</span> g</div>
@@ -62,8 +62,6 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
     <div>Calorias: <span id="metaCaloriasDisplay">1600</span> kcal</div>
     <div>Água: <span id="metaAguaDisplay">2000</span> ml</div>
   </div>
-
-  <!-- Coluna Totais do Dia -->
   <div style="flex:1; background:#f7f9fc; padding:10px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1);">
     <h4>Totais do Dia</h4>
     <div>Proteína: <span id="totalProteina">0</span> g</div>
@@ -71,6 +69,14 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
     <div>Calorias: <span id="totalCalorias">0</span> kcal</div>
     <div>Água: <span id="totalAgua">0</span> ml</div>
   </div>
+</div>
+
+<!-- Barras de progresso -->
+<div class="barra-container">
+<div>Proteína</div><div class="bar-container"><div id="barProteina" class="bar-fill barProteina"></div></div>
+<div>Carboidrato</div><div class="bar-container"><div id="barCarbo" class="bar-fill barCarbo"></div></div>
+<div>Calorias</div><div class="bar-container"><div id="barCalorias" class="bar-fill barCalorias"></div></div>
+<div>Água</div><div class="bar-container"><div id="barAgua" class="bar-fill barAgua"></div></div>
 </div>
 
 <!-- Adicionar alimentos -->
@@ -81,7 +87,6 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 <option value="lanche">☕ Lanche</option>
 <option value="jantar">🌙 Jantar</option>
 </select>
-
 <input type="text" id="alimento" placeholder="Alimento (ex: frango)">
 <div id="sugestoes" class="autocomplete-suggestions"></div>
 <input type="number" id="quantidade" placeholder="Quantidade">
@@ -145,7 +150,6 @@ let banco = {
 "whey growth":{p:24,c:120,carb:3},
 "ovo cozido":{p:6,c:70,carb:0},
 "ovo frito":{p:7,c:90,carb:0},
-"omelete":{p:6,c:90,carb:1},
 "frango peito":{p:31,c:165,carb:0},
 "frango desfiado":{p:30,c:160,carb:0},
 "frango assado":{p:32,c:170,carb:0},
@@ -261,11 +265,10 @@ function atualizarDisplayMetas(){
   document.getElementById("metaCaloriasDisplay").innerText = document.getElementById("metaCalorias").value;
   document.getElementById("metaAguaDisplay").innerText = document.getElementById("metaAgua").value;
 }
-
-document.getElementById("metaProteina").addEventListener("input", atualizarDisplayMetas);
-document.getElementById("metaCarbo").addEventListener("input", atualizarDisplayMetas);
-document.getElementById("metaCalorias").addEventListener("input", atualizarDisplayMetas);
-document.getElementById("metaAgua").addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaProteina")?.addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaCarbo")?.addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaCalorias")?.addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaAgua")?.addEventListener("input", atualizarDisplayMetas);
 atualizarDisplayMetas();
 
 // --- Aba Corpo ---
@@ -292,34 +295,4 @@ desenharGrafico();
 function mostrarHistorico(){
 let html="";
 historico.forEach(h=>{
-html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h.gordura}% | Massa Gorda: ${h.massaGorda}kg | Massa Magra: ${h.massaMagra}kg</div>`;
-});
-document.getElementById("historico").innerHTML=html;
-}
-
-// --- Gráfico Corpo ---
-function desenharGrafico(){
-let c=document.getElementById("graficoPeso");
-let ctx=c.getContext("2d");
-ctx.clearRect(0,0,c.width,c.height);
-if(historico.length===0) return;
-let maxPeso=Math.max(...historico.map(h=>h.peso))*1.1;
-let w=c.width/historico.length;
-historico.forEach((h,i)=>{
-let x=i*w;
-// Massa Magra - verde
-ctx.fillStyle="#32cd32";
-ctx.fillRect(x,c.height-(h.massaMagra/maxPeso)*c.height,w-6,(h.massaMagra/maxPeso)*c.height);
-// Massa Gorda - vermelho
-ctx.fillStyle="#ff4c4c";
-ctx.fillRect(x,c.height-(h.peso/maxPeso)*c.height,w-6,(h.massaGorda/maxPeso)*c.height);
-});
-}
-
-atualizar();
-mostrarHistorico();
-desenharGrafico();
-</script>
-</body>
-</html>
-
+html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${
