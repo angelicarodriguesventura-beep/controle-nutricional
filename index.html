@@ -6,22 +6,26 @@
 <title>App Fitness Premium</title>
 <style>
 body {font-family: Arial,sans-serif;background:#f0f2f5;margin:0;padding:10px;}
-.container {max-width:450px;margin:auto;background:white;padding:15px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
-h1{text-align:center;color:#222;}
+.container {max-width:450px;margin:auto;background:white;padding:15px;border-radius:20px;box-shadow:0 8px 25px rgba(0,0,0,0.15);}
+h1{text-align:center;color:#222;margin-bottom:20px;}
 .tabs{display:flex;margin-bottom:10px;}
-.tabs button{flex:1;padding:10px;border:none;cursor:pointer;background:#ddd;border-radius:10px 10px 0 0;}
+.tabs button{flex:1;padding:12px;border:none;cursor:pointer;background:#ddd;border-radius:15px 15px 0 0;font-weight:bold;}
 .tabs .active{background:#1e90ff;color:white;}
-input,select{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc;}
-button.add{background:#1e90ff;color:white;padding:10px;border-radius:10px;width:100%;border:none;margin-top:5px;cursor:pointer;}
-.refeicao{background:#f7f9fc;padding:8px;border-radius:10px;margin-top:10px;}
-.item{font-size:13px;margin:3px 0;}
-.small{font-size:12px;color:#555;}
-.bar-container{background:#ddd;height:12px;border-radius:10px;margin:5px 0;}
-.bar-fill{height:12px;border-radius:10px;width:0%;background:#1e90ff;transition: width 0.5s;}
+input,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;}
+button.add{background:#1e90ff;color:white;padding:12px;border-radius:12px;width:100%;border:none;margin-top:10px;cursor:pointer;font-weight:bold;}
+.refeicao{background:#f7f9fc;padding:12px;border-radius:15px;margin-top:12px;box-shadow:0 3px 8px rgba(0,0,0,0.05);}
+.item{font-size:14px;margin:4px 0;}
+.small{font-size:13px;color:#555;margin:3px 0;}
+.bar-container{background:#ddd;height:14px;border-radius:10px;margin:5px 0;overflow:hidden;}
+.bar-fill{height:14px;width:0%;border-radius:10px;transition: width 0.5s;}
+.barProteina{background:#1e90ff;}
+.barCarbo{background:#ff8c00;}
+.barCalorias{background:#32cd32;}
+.barAgua{background:#00ced1;}
 .autocomplete-suggestions{border:1px solid #ccc;background:#fff;position:absolute;z-index:1000;max-height:150px;overflow-y:auto;border-radius:8px;}
-.autocomplete-suggestion{padding:5px;cursor:pointer;}
+.autocomplete-suggestion{padding:6px;cursor:pointer;}
 .autocomplete-suggestion:hover{background:#eee;}
-canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
+canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 </style>
 </head>
 <body>
@@ -64,13 +68,13 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 
 <h3>Totais do Dia</h3>
 <div>Proteína: <span id="totalProteina">0</span> g</div>
-<div class="bar-container"><div id="barProteina" class="bar-fill"></div></div>
+<div class="bar-container"><div id="barProteina" class="bar-fill barProteina"></div></div>
 <div>Carboidrato: <span id="totalCarbo">0</span> g</div>
-<div class="bar-container"><div id="barCarbo" class="bar-fill"></div></div>
+<div class="bar-container"><div id="barCarbo" class="bar-fill barCarbo"></div></div>
 <div>Calorias: <span id="totalCalorias">0</span> kcal</div>
-<div class="bar-container"><div id="barCalorias" class="bar-fill"></div></div>
+<div class="bar-container"><div id="barCalorias" class="bar-fill barCalorias"></div></div>
 <div>Água: <span id="totalAgua">0</span> ml</div>
-<div class="bar-container"><div id="barAgua" class="bar-fill"></div></div>
+<div class="bar-container"><div id="barAgua" class="bar-fill barAgua"></div></div>
 
 <div id="lista"></div>
 </div>
@@ -98,11 +102,9 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 </div>
 
 <script>
-// Banco completo detalhado
+// Banco detalhado (alimentos e whey)
 let banco = {
 "whey growth":{p:24,c:120,carb:3},
-"whey integralmedica":{p:24,c:120,carb:3},
-"whey probiotica":{p:24,c:120,carb:3},
 "ovo cozido":{p:6,c:70,carb:0},
 "ovo frito":{p:7,c:90,carb:0},
 "omelete":{p:6,c:90,carb:1},
@@ -112,9 +114,6 @@ let banco = {
 "frango asa":{p:24,c:130,carb:0},
 "frango coxa":{p:23,c:125,carb:0},
 "bife":{p:26,c:250,carb:0},
-"patinho":{p:27,c:220,carb:0},
-"carne moida":{p:25,c:240,carb:0},
-"filé mignon":{p:26,c:250,carb:0},
 "salmão":{p:20,c:208,carb:0},
 "sardinha":{p:22,c:208,carb:0},
 "batata cozida":{p:2,c:80,carb:18},
@@ -126,8 +125,6 @@ let banco = {
 "banana":{p:1,c:89,carb:23},
 "maçã":{p:0.5,c:52,carb:14},
 "mamão":{p:0.6,c:43,carb:11},
-"laranja":{p:1,c:47,carb:12},
-"abacaxi":{p:0.5,c:50,carb:13},
 "morango":{p:0.5,c:33,carb:8},
 "manga":{p:0.8,c:60,carb:15},
 "kiwi":{p:1,c:61,carb:15},
@@ -138,17 +135,12 @@ let banco = {
 "vagem":{p:2,c:31,carb:7},
 "couve":{p:2,c:32,carb:6},
 "pão":{p:4,c:70,carb:13},
-"pão integral":{p:4,c:65,carb:12},
 "biscoito":{p:2,c:50,carb:9},
 "queijo prato":{p:7,c:90,carb:1},
-"queijo minas":{p:6,c:85,carb:1},
-"mussarela":{p:7,c:95,carb:1},
 "iogurte natural":{p:10,c:120,carb:8},
-"iogurte sabor":{p:10,c:130,carb:10},
 "lasanha":{p:12,c:250,carb:30},
 "pizza":{p:10,c:280,carb:35},
-"suco limão":{p:0,c:10,carb:3},
-"suco caju":{p:0,c:45,carb:11}
+"suco limão":{p:0,c:10,carb:3}
 };
 
 let dados = JSON.parse(localStorage.getItem("nutri")) || {cafe:[],almoco:[],lanche:[],jantar:[]};
@@ -243,11 +235,11 @@ let imc=peso/(altura*altura);
 
 // Fórmula Navy para mulheres corrigida
 let gordura=163.205*Math.log10(cintura+quadril-pescoco)-97.684*Math.log10(altura*100)-78.387;
-gordura=Math.min(Math.max(gordura,5),60); // limite realista
+gordura=Math.min(Math.max(gordura,5),60);
 let massaGorda=peso*(gordura/100);
 let massaMagra=peso-massaGorda;
 
-let registro={data:new Date().toLocaleDateString(),peso,imc:imc.toFixed(1),gordura,grossaGorda:massaGorda,massaMagra};
+let registro={data:new Date().toLocaleDateString(),peso,imc:imc.toFixed(1),gordura:gordura.toFixed(1),massaGorda:massaGorda.toFixed(1),massaMagra:massaMagra.toFixed(1)};
 historico.unshift(registro);
 localStorage.setItem("corpo",JSON.stringify(historico));
 mostrarHistorico();
@@ -257,7 +249,7 @@ desenharGrafico();
 function mostrarHistorico(){
 let html="";
 historico.forEach(h=>{
-html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h.gordura.toFixed(1)}% | Massa Gorda: ${h.massaGorda.toFixed(1)}kg | Massa Magra: ${h.massaMagra.toFixed(1)}kg</div>`;
+html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h.gordura}% | Massa Gorda: ${h.massaGorda}kg | Massa Magra: ${h.massaMagra}kg</div>`;
 });
 document.getElementById("historico").innerHTML=html;
 }
