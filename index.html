@@ -1,202 +1,176 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Meu App Fitness</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu App Fitness</title>
 
-    .container {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .tabs {
-      display: flex;
-      margin-bottom: 15px;
-    }
-
-    .tabs button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      cursor: pointer;
-      background: #ddd;
-    }
-
-    .tabs button.active {
-      background: black;
-      color: white;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    button.add {
-      background: black;
-      color: white;
-      padding: 10px;
-      border-radius: 10px;
-      width: 100%;
-      border: none;
-      margin-top: 5px;
-    }
-
-    .item {
-      background: #f7f7f7;
-      padding: 8px;
-      border-radius: 8px;
-      margin-top: 5px;
-      font-size: 14px;
-    }
-
-    .bar {
-      height: 10px;
-      background: #ddd;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    .bar-fill {
-      height: 10px;
-      background: black;
-      border-radius: 10px;
-      width: 0%;
-    }
-  </style>
+<style>
+body {font-family: Arial; background:#f2f2f2; margin:0; padding:15px;}
+.container {max-width:400px; margin:auto; background:white; padding:15px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1);}
+h1{text-align:center;}
+.tabs{display:flex;margin-bottom:10px;}
+.tabs button{flex:1;padding:10px;border:none;background:#ddd;}
+.tabs .active{background:black;color:white;}
+input, select{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc;}
+button.add{background:black;color:white;padding:10px;border-radius:10px;width:100%;border:none;}
+.refeicao{background:#f7f7f7;padding:8px;border-radius:10px;margin-top:10px;}
+.item{font-size:13px;margin:3px 0;}
+.small{font-size:12px;color:#555;}
+</style>
 </head>
 
 <body>
-
 <div class="container">
-  <h1>Meu App Fitness</h1>
 
-  <div class="tabs">
-    <button id="tabNutri" class="active" onclick="mostrar('nutri')">Nutrição</button>
-    <button id="tabCorpo" onclick="mostrar('corpo')">Corpo</button>
-  </div>
+<h1>Meu App Fitness</h1>
 
-  <!-- NUTRIÇÃO -->
-  <div id="nutri">
+<div class="tabs">
+<button id="tabNutri" class="active" onclick="mostrar('nutri')">Nutrição</button>
+<button id="tabCorpo" onclick="mostrar('corpo')">Corpo</button>
+</div>
 
-    <input type="number" id="metaProteina" placeholder="Meta Proteína (g)" value="120">
-    <input type="number" id="metaCalorias" placeholder="Meta Calorias" value="1600">
-    <input type="number" id="metaCarbo" placeholder="Meta Carbo (g)" value="150">
+<!-- NUTRIÇÃO -->
+<div id="nutri">
 
-    <div>Proteína: <span id="totalProteina">0</span></div>
-    <div class="bar"><div id="barProteina" class="bar-fill"></div></div>
+<select id="refeicao">
+<option value="cafe">☀ Café da Manhã</option>
+<option value="almoco">🍛 Almoço</option>
+<option value="lanche">☕ Lanche</option>
+<option value="jantar">🌙 Jantar</option>
+</select>
 
-    <div>Calorias: <span id="totalCalorias">0</span></div>
-    <div class="bar"><div id="barCalorias" class="bar-fill"></div></div>
+<input type="text" id="alimento" placeholder="Digite alimento (ex: ovo)">
+<input type="number" id="quantidade" placeholder="Quantidade (g ou unidade)">
 
-    <div>Carboidratos: <span id="totalCarbo">0</span></div>
-    <div class="bar"><div id="barCarbo" class="bar-fill"></div></div>
+<button class="add" onclick="adicionar()">Adicionar</button>
 
-    <input type="text" id="nome" placeholder="Nome do alimento">
-    <input type="number" id="proteina" placeholder="Proteína (g)">
-    <input type="number" id="calorias" placeholder="Calorias">
-    <input type="number" id="carbo" placeholder="Carboidratos (g)">
-
-    <button class="add" onclick="adicionar()">Adicionar</button>
-
-    <div id="lista"></div>
-  </div>
-
-  <!-- CORPO -->
-  <div id="corpo" style="display:none;">
-    <input type="number" id="peso" placeholder="Peso (kg)">
-    <input type="number" id="altura" placeholder="Altura (cm)">
-    <input type="number" id="cintura" placeholder="Cintura (cm)">
-    <input type="number" id="quadril" placeholder="Quadril (cm)">
-    <input type="number" id="pescoco" placeholder="Pescoço (cm)">
-
-    <button class="add" onclick="calcularCorpo()">Calcular</button>
-
-    <div id="resultadoCorpo"></div>
-  </div>
+<div id="lista"></div>
+<h3>Total do Dia:</h3>
+<div id="totalDia"></div>
 
 </div>
 
+<!-- CORPO -->
+<div id="corpo" style="display:none;">
+
+<input type="number" id="peso" placeholder="Peso (kg)">
+<input type="number" id="altura" placeholder="Altura (cm)">
+<input type="number" id="cintura" placeholder="Cintura (cm)">
+<input type="number" id="quadril" placeholder="Quadril (cm)">
+<input type="number" id="pescoco" placeholder="Pescoço (cm)">
+
+<button class="add" onclick="salvarCorpo()">Salvar Medidas</button>
+
+<div id="resultado"></div>
+<h3>Histórico:</h3>
+<div id="historico"></div>
+
+</div>
+</div>
+
 <script>
-let alimentos = [];
+
+let banco = {
+  ovo:{p:6,c:70,carb:0},
+  arroz:{p:2.5,c:130,carb:28},
+  feijao:{p:5,c:110,carb:20},
+  frango:{p:31,c:165,carb:0},
+  carne:{p:26,c:250,carb:0},
+  banana:{p:1,c:90,carb:23},
+  whey:{p:24,c:120,carb:3},
+  iogurte:{p:10,c:120,carb:8},
+  pão:{p:4,c:70,carb:13},
+  queijo:{p:7,c:90,carb:1}
+};
+
+let dados = JSON.parse(localStorage.getItem("nutri")) || {cafe:[],almoco:[],lanche:[],jantar:[]};
+let historico = JSON.parse(localStorage.getItem("corpo")) || [];
 
 function mostrar(aba){
-  document.getElementById("nutri").style.display = aba === "nutri" ? "block" : "none";
-  document.getElementById("corpo").style.display = aba === "corpo" ? "block" : "none";
-
-  document.getElementById("tabNutri").classList.toggle("active", aba==="nutri");
-  document.getElementById("tabCorpo").classList.toggle("active", aba==="corpo");
+document.getElementById("nutri").style.display = aba==="nutri"?"block":"none";
+document.getElementById("corpo").style.display = aba==="corpo"?"block":"none";
+document.getElementById("tabNutri").classList.toggle("active",aba==="nutri");
+document.getElementById("tabCorpo").classList.toggle("active",aba==="corpo");
 }
 
 function adicionar(){
-  let nome = document.getElementById("nome").value;
-  let p = Number(document.getElementById("proteina").value) || 0;
-  let c = Number(document.getElementById("calorias").value) || 0;
-  let carb = Number(document.getElementById("carbo").value) || 0;
+let nome=document.getElementById("alimento").value.toLowerCase();
+let qtd=Number(document.getElementById("quantidade").value)||1;
+let ref=document.getElementById("refeicao").value;
 
-  alimentos.push({nome,p,c,carb});
-  atualizar();
+if(!banco[nome]){alert("Alimento não cadastrado.");return;}
+
+let base=banco[nome];
+let item={
+nome,
+p:base.p*qtd,
+c:base.c*qtd,
+carb:base.carb*qtd
+};
+
+dados[ref].push(item);
+localStorage.setItem("nutri",JSON.stringify(dados));
+atualizar();
 }
 
 function atualizar(){
-  let totalP = 0, totalC = 0, totalCarb = 0;
-  let lista = document.getElementById("lista");
-  lista.innerHTML = "";
+let totalP=0,totalC=0,totalCarb=0;
+let html="";
 
-  alimentos.forEach(a=>{
-    totalP += a.p;
-    totalC += a.c;
-    totalCarb += a.carb;
-
-    lista.innerHTML += `<div class="item">${a.nome} | P:${a.p}g C:${a.carb}g Kcal:${a.c}</div>`;
-  });
-
-  document.getElementById("totalProteina").innerText = totalP;
-  document.getElementById("totalCalorias").innerText = totalC;
-  document.getElementById("totalCarbo").innerText = totalCarb;
-
-  let metaP = document.getElementById("metaProteina").value;
-  let metaC = document.getElementById("metaCalorias").value;
-  let metaCarb = document.getElementById("metaCarbo").value;
-
-  document.getElementById("barProteina").style.width = (totalP/metaP*100)+"%";
-  document.getElementById("barCalorias").style.width = (totalC/metaC*100)+"%";
-  document.getElementById("barCarbo").style.width = (totalCarb/metaCarb*100)+"%";
+for(let r in dados){
+if(dados[r].length>0){
+html+=`<div class='refeicao'><b>${r.toUpperCase()}</b>`;
+dados[r].forEach(i=>{
+totalP+=i.p;
+totalC+=i.c;
+totalCarb+=i.carb;
+html+=`<div class='item'>${i.nome} | P:${i.p}g C:${i.carb}g Kcal:${i.c}</div>`;
+});
+html+="</div>";
+}
 }
 
-function calcularCorpo(){
-  let peso = Number(document.getElementById("peso").value);
-  let altura = Number(document.getElementById("altura").value)/100;
-  let cintura = Number(document.getElementById("cintura").value);
-  let quadril = Number(document.getElementById("quadril").value);
-  let pescoco = Number(document.getElementById("pescoco").value);
-
-  let imc = peso/(altura*altura);
-
-  let gordura = 163.205 * Math.log10(cintura + quadril - pescoco) - 97.684 * Math.log10(altura*100) - 78.387;
-
-  document.getElementById("resultadoCorpo").innerHTML =
-    `IMC: ${imc.toFixed(1)}<br>% Gordura estimado: ${gordura.toFixed(1)}%`;
+document.getElementById("lista").innerHTML=html;
+document.getElementById("totalDia").innerHTML=
+`Proteína: ${totalP.toFixed(1)}g<br>
+Carboidrato: ${totalCarb.toFixed(1)}g<br>
+Calorias: ${totalC.toFixed(1)} kcal`;
 }
+
+function salvarCorpo(){
+let peso=Number(document.getElementById("peso").value);
+let altura=Number(document.getElementById("altura").value)/100;
+let cintura=Number(document.getElementById("cintura").value);
+let quadril=Number(document.getElementById("quadril").value);
+let pescoco=Number(document.getElementById("pescoco").value);
+
+let imc=peso/(altura*altura);
+let gordura=163.205*Math.log10(cintura+quadril-pescoco)-97.684*Math.log10(altura*100)-78.387;
+
+let registro={
+data:new Date().toLocaleDateString(),
+peso,
+imc:imc.toFixed(1),
+gordura:gordura.toFixed(1)
+};
+
+historico.unshift(registro);
+localStorage.setItem("corpo",JSON.stringify(historico));
+mostrarHistorico();
+}
+
+function mostrarHistorico(){
+let html="";
+historico.forEach(h=>{
+html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC ${h.imc} | ${h.gordura}%</div>`;
+});
+document.getElementById("historico").innerHTML=html;
+}
+
+atualizar();
+mostrarHistorico();
+
 </script>
 
 </body>
