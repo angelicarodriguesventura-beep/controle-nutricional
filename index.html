@@ -51,16 +51,29 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 
 <!-- --- Aba Nutrição --- -->
 <div id="nutri">
-<h3>Metas Diárias</h3>
-<label>Proteína (g)</label>
-<input type="number" id="metaProteina" value="120">
-<label>Carboidrato (g)</label>
-<input type="number" id="metaCarbo" value="150">
-<label>Calorias (kcal)</label>
-<input type="number" id="metaCalorias" value="1600">
-<label>Água (ml)</label>
-<input type="number" id="metaAgua" value="2000">
 
+<!-- Topo com duas colunas -->
+<div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px;">
+  <!-- Coluna Metas -->
+  <div style="flex:1; background:#f7f9fc; padding:10px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1);">
+    <h4>Metas Diárias</h4>
+    <div>Proteína: <span id="metaProteinaDisplay">120</span> g</div>
+    <div>Carboidrato: <span id="metaCarboDisplay">150</span> g</div>
+    <div>Calorias: <span id="metaCaloriasDisplay">1600</span> kcal</div>
+    <div>Água: <span id="metaAguaDisplay">2000</span> ml</div>
+  </div>
+
+  <!-- Coluna Totais do Dia -->
+  <div style="flex:1; background:#f7f9fc; padding:10px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1);">
+    <h4>Totais do Dia</h4>
+    <div>Proteína: <span id="totalProteina">0</span> g</div>
+    <div>Carboidrato: <span id="totalCarbo">0</span> g</div>
+    <div>Calorias: <span id="totalCalorias">0</span> kcal</div>
+    <div>Água: <span id="totalAgua">0</span> ml</div>
+  </div>
+</div>
+
+<!-- Adicionar alimentos -->
 <h3>Adicionar Alimento</h3>
 <select id="refeicao">
 <option value="cafe">☀ Café da Manhã</option>
@@ -86,16 +99,7 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 <input type="number" id="novoCarbo" placeholder="Carboidrato (g)">
 <button class="addAlimento" onclick="adicionarNovoAlimento()">Adicionar Alimento</button>
 
-<h3>Totais do Dia</h3>
-<div>Proteína: <span id="totalProteina">0</span> g</div>
-<div class="bar-container"><div id="barProteina" class="bar-fill barProteina"></div></div>
-<div>Carboidrato: <span id="totalCarbo">0</span> g</div>
-<div class="bar-container"><div id="barCarbo" class="bar-fill barCarbo"></div></div>
-<div>Calorias: <span id="totalCalorias">0</span> kcal</div>
-<div class="bar-container"><div id="barCalorias" class="bar-fill barCalorias"></div></div>
-<div>Água: <span id="totalAgua">0</span> ml</div>
-<div class="bar-container"><div id="barAgua" class="bar-fill barAgua"></div></div>
-
+<h3>Lista de Refeições</h3>
 <div id="lista"></div>
 </div>
 
@@ -179,7 +183,7 @@ inputAlimento.addEventListener("input", function(){
       let div = document.createElement("div");
       div.classList.add("autocomplete-suggestion");
       div.innerText=key;
-      div.addEventListener("click",()=>{inputAlimento.value=key;sugestoesDiv.innerHTML="";});
+      div.addEventListener("click",()=>{inputAlimento.value=key;sugestoDiv.innerHTML="";});
       sugestoesDiv.appendChild(div);
     }
   }
@@ -232,19 +236,37 @@ html+=`<div class='subtotal'>Subtotal: P:${subtotalP.toFixed(1)}g | C:${subtotal
 }
 }
 document.getElementById("lista").innerHTML=html;
-let metaP=Number(document.getElementById("metaProteina").value);
-let metaC=Number(document.getElementById("metaCalorias").value);
-let metaCarb=Number(document.getElementById("metaCarbo").value);
-let metaAgua=Number(document.getElementById("metaAgua").value);
+
+// Atualiza barras e totais na coluna
 document.getElementById("totalProteina").innerText=totalP.toFixed(1);
 document.getElementById("totalCarbo").innerText=totalCarb.toFixed(1);
 document.getElementById("totalCalorias").innerText=totalC.toFixed(1);
 document.getElementById("totalAgua").innerText=totalAgua;
+
+// Atualiza barras
+let metaP=Number(document.getElementById("metaProteina").value);
+let metaC=Number(document.getElementById("metaCalorias").value);
+let metaCarb=Number(document.getElementById("metaCarbo").value);
+let metaAgua=Number(document.getElementById("metaAgua").value);
 document.getElementById("barProteina").style.width=Math.min(totalP/metaP*100,100)+"%";
 document.getElementById("barCalorias").style.width=Math.min(totalC/metaC*100,100)+"%";
 document.getElementById("barCarbo").style.width=Math.min(totalCarb/metaCarb*100,100)+"%";
 document.getElementById("barAgua").style.width=Math.min(totalAgua/metaAgua*100,100)+"%";
 }
+
+// --- Atualiza display das metas ---
+function atualizarDisplayMetas(){
+  document.getElementById("metaProteinaDisplay").innerText = document.getElementById("metaProteina").value;
+  document.getElementById("metaCarboDisplay").innerText = document.getElementById("metaCarbo").value;
+  document.getElementById("metaCaloriasDisplay").innerText = document.getElementById("metaCalorias").value;
+  document.getElementById("metaAguaDisplay").innerText = document.getElementById("metaAgua").value;
+}
+
+document.getElementById("metaProteina").addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaCarbo").addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaCalorias").addEventListener("input", atualizarDisplayMetas);
+document.getElementById("metaAgua").addEventListener("input", atualizarDisplayMetas);
+atualizarDisplayMetas();
 
 // --- Aba Corpo ---
 function salvarCorpo(){
@@ -275,7 +297,7 @@ html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h
 document.getElementById("historico").innerHTML=html;
 }
 
-// --- Gráfico Corpo com cores separadas ---
+// --- Gráfico Corpo ---
 function desenharGrafico(){
 let c=document.getElementById("graficoPeso");
 let ctx=c.getContext("2d");
@@ -289,11 +311,8 @@ let x=i*w;
 ctx.fillStyle="#32cd32";
 ctx.fillRect(x,c.height-(h.massaMagra/maxPeso)*c.height,w-6,(h.massaMagra/maxPeso)*c.height);
 // Massa Gorda - vermelho
-ctx.fillStyle="#ff6347";
-ctx.fillRect(x,c.height-(h.massaGorda/maxPeso)*c.height,w-6,(h.massaGorda/maxPeso)*c.height);
-// Gordura - azul claro
-ctx.fillStyle="#87cefa";
-ctx.fillRect(x,c.height-(h.gordura/100*maxPeso)*c.height,w-6,(h.gordura/100*maxPeso)*c.height);
+ctx.fillStyle="#ff4c4c";
+ctx.fillRect(x,c.height-(h.peso/maxPeso)*c.height,w-6,(h.massaGorda/maxPeso)*c.height);
 });
 }
 
@@ -303,3 +322,4 @@ desenharGrafico();
 </script>
 </body>
 </html>
+
