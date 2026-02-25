@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meu App Fitness</title>
+<title>App Fitness Premium</title>
 <style>
 body {font-family: Arial,sans-serif;background:#f0f2f5;margin:0;padding:10px;}
 .container {max-width:450px;margin:auto;background:white;padding:15px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
@@ -17,13 +17,16 @@ button.add{background:#1e90ff;color:white;padding:10px;border-radius:10px;width:
 .item{font-size:13px;margin:3px 0;}
 .small{font-size:12px;color:#555;}
 .bar-container{background:#ddd;height:12px;border-radius:10px;margin:5px 0;}
-.bar-fill{height:12px;border-radius:10px;width:0%;background:#1e90ff;}
+.bar-fill{height:12px;border-radius:10px;width:0%;background:#1e90ff;transition: width 0.5s;}
+.autocomplete-suggestions{border:1px solid #ccc;background:#fff;position:absolute;z-index:1000;max-height:150px;overflow-y:auto;border-radius:8px;}
+.autocomplete-suggestion{padding:5px;cursor:pointer;}
+.autocomplete-suggestion:hover{background:#eee;}
 canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Meu App Fitness</h1>
+<h1>App Fitness Premium</h1>
 <div class="tabs">
 <button id="tabNutri" class="active" onclick="mostrar('nutri')">Nutrição</button>
 <button id="tabCorpo" onclick="mostrar('corpo')">Corpo</button>
@@ -32,10 +35,14 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 <!-- NUTRIÇÃO -->
 <div id="nutri">
 <h3>Metas Diárias</h3>
-<input type="number" id="metaProteina" placeholder="Proteína (g)" value="120">
-<input type="number" id="metaCarbo" placeholder="Carboidrato (g)" value="150">
-<input type="number" id="metaCalorias" placeholder="Calorias" value="1600">
-<input type="number" id="metaAgua" placeholder="Água (ml)" value="2000">
+<label>Proteína (g)</label>
+<input type="number" id="metaProteina" value="120">
+<label>Carboidrato (g)</label>
+<input type="number" id="metaCarbo" value="150">
+<label>Calorias (kcal)</label>
+<input type="number" id="metaCalorias" value="1600">
+<label>Água (ml)</label>
+<input type="number" id="metaAgua" value="2000">
 
 <h3>Adicionar Alimento</h3>
 <select id="refeicao">
@@ -45,14 +52,14 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 <option value="jantar">🌙 Jantar</option>
 </select>
 
-<input type="text" id="alimento" placeholder="Alimento (ex: ovo)">
+<input type="text" id="alimento" placeholder="Alimento (ex: frango)">
+<div id="sugestoes" class="autocomplete-suggestions"></div>
 <input type="number" id="quantidade" placeholder="Quantidade">
 <select id="unidade">
 <option value="unidade">Unidade</option>
 <option value="g">Gramas (g)</option>
 <option value="ml">ML</option>
 </select>
-
 <button class="add" onclick="adicionar()">Adicionar</button>
 
 <h3>Totais do Dia</h3>
@@ -76,11 +83,12 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 <input type="number" id="cintura" placeholder="Cintura (cm)">
 <input type="number" id="quadril" placeholder="Quadril (cm)">
 <input type="number" id="pescoco" placeholder="Pescoço (cm)">
-
 <button class="add" onclick="salvarCorpo()">Salvar Medidas</button>
 
+<h3>Resultado Atual</h3>
 <div id="resultado"></div>
-<h3>Histórico:</h3>
+
+<h3>Histórico Detalhado:</h3>
 <div id="historico"></div>
 
 <h3>Evolução do Peso (kg)</h3>
@@ -90,28 +98,57 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 </div>
 
 <script>
-// Banco de alimentos com unidade padrão
+// Banco completo detalhado
 let banco = {
-  ovo:{p:6,c:70,carb:0},
-  arroz:{p:2.5,c:130,carb:28},
-  feijao:{p:5,c:110,carb:20},
-  frango:{p:31,c:165,carb:0},
-  carne:{p:26,c:250,carb:0},
-  banana:{p:1,c:90,carb:23},
-  whey:{p:24,c:120,carb:3},
-  iogurte:{p:10,c:120,carb:8},
-  pao:{p:4,c:70,carb:13},
-  queijo:{p:7,c:90,carb:1},
-  abobora:{p:1,c:25,carb:6},
-  mandioca:{p:1.5,c:150,carb:38},
-  espinafre:{p:3,c:23,carb:4},
-  tomate:{p:1,c:22,carb:4},
-  brocolis:{p:3,c:34,carb:7},
-  batatadoce:{p:2,c:86,carb:20},
-  suco_limão:{p:0,c:10,carb:3},
-  suco_caju:{p:0,c:45,carb:11},
-  lasanha:{p:12,c:250,carb:30},
-  pizza:{p:10,c:280,carb:35}
+"whey growth":{p:24,c:120,carb:3},
+"whey integralmedica":{p:24,c:120,carb:3},
+"whey probiotica":{p:24,c:120,carb:3},
+"ovo cozido":{p:6,c:70,carb:0},
+"ovo frito":{p:7,c:90,carb:0},
+"omelete":{p:6,c:90,carb:1},
+"frango peito":{p:31,c:165,carb:0},
+"frango desfiado":{p:30,c:160,carb:0},
+"frango assado":{p:32,c:170,carb:0},
+"frango asa":{p:24,c:130,carb:0},
+"frango coxa":{p:23,c:125,carb:0},
+"bife":{p:26,c:250,carb:0},
+"patinho":{p:27,c:220,carb:0},
+"carne moida":{p:25,c:240,carb:0},
+"filé mignon":{p:26,c:250,carb:0},
+"salmão":{p:20,c:208,carb:0},
+"sardinha":{p:22,c:208,carb:0},
+"batata cozida":{p:2,c:80,carb:18},
+"batata doce":{p:2,c:86,carb:20},
+"batata frita":{p:3,c:312,carb:40},
+"farinha aveia":{p:13,c:389,carb:66},
+"farelo aveia":{p:15,c:390,carb:50},
+"cacau 70%":{p:20,c:228,carb:14},
+"banana":{p:1,c:89,carb:23},
+"maçã":{p:0.5,c:52,carb:14},
+"mamão":{p:0.6,c:43,carb:11},
+"laranja":{p:1,c:47,carb:12},
+"abacaxi":{p:0.5,c:50,carb:13},
+"morango":{p:0.5,c:33,carb:8},
+"manga":{p:0.8,c:60,carb:15},
+"kiwi":{p:1,c:61,carb:15},
+"brócolis":{p:3,c:34,carb:7},
+"abóbora":{p:1,c:25,carb:6},
+"espinafre":{p:3,c:23,carb:4},
+"tomate":{p:1,c:22,carb:4},
+"vagem":{p:2,c:31,carb:7},
+"couve":{p:2,c:32,carb:6},
+"pão":{p:4,c:70,carb:13},
+"pão integral":{p:4,c:65,carb:12},
+"biscoito":{p:2,c:50,carb:9},
+"queijo prato":{p:7,c:90,carb:1},
+"queijo minas":{p:6,c:85,carb:1},
+"mussarela":{p:7,c:95,carb:1},
+"iogurte natural":{p:10,c:120,carb:8},
+"iogurte sabor":{p:10,c:130,carb:10},
+"lasanha":{p:12,c:250,carb:30},
+"pizza":{p:10,c:280,carb:35},
+"suco limão":{p:0,c:10,carb:3},
+"suco caju":{p:0,c:45,carb:11}
 };
 
 let dados = JSON.parse(localStorage.getItem("nutri")) || {cafe:[],almoco:[],lanche:[],jantar:[]};
@@ -124,8 +161,27 @@ document.getElementById("tabNutri").classList.toggle("active",aba==="nutri");
 document.getElementById("tabCorpo").classList.toggle("active",aba==="corpo");
 }
 
+// Autocomplete
+let inputAlimento = document.getElementById("alimento");
+let sugestoesDiv = document.getElementById("sugestoes");
+inputAlimento.addEventListener("input", function(){
+  let val = this.value.toLowerCase();
+  sugestoesDiv.innerHTML="";
+  if(!val) return;
+  for(let key in banco){
+    if(key.includes(val)){
+      let div = document.createElement("div");
+      div.classList.add("autocomplete-suggestion");
+      div.innerText=key;
+      div.addEventListener("click",()=>{inputAlimento.value=key;sugestoesDiv.innerHTML="";});
+      sugestoesDiv.appendChild(div);
+    }
+  }
+});
+
+// Adicionar alimento
 function adicionar(){
-let nome=document.getElementById("alimento").value.toLowerCase().replace(/\s+/g,'_');
+let nome=document.getElementById("alimento").value.toLowerCase();
 let qtd=Number(document.getElementById("quantidade").value)||1;
 let unidade=document.getElementById("unidade").value;
 let ref=document.getElementById("refeicao").value;
@@ -133,23 +189,16 @@ let ref=document.getElementById("refeicao").value;
 if(!banco[nome]){alert("Alimento não cadastrado"); return;}
 
 let base=banco[nome];
-let multiplicador=1;
-if(unidade==="g"){multiplicador=qtd/100;}
-else if(unidade==="ml"){multiplicador=qtd/100;}
-else{multiplicador=qtd;}
+let mult=1;
+if(unidade==="g"||unidade==="ml"){mult=qtd/100;} else mult=qtd;
 
-let item={
-nome,
-p:base.p*multiplicador,
-c:base.c*multiplicador,
-carb:base.carb*multiplicador
-};
-
+let item={nome,p:base.p*mult,c:base.c*mult,carb:base.carb*mult};
 dados[ref].push(item);
 localStorage.setItem("nutri",JSON.stringify(dados));
 atualizar();
 }
 
+// Atualizar totais
 function atualizar(){
 let totalP=0,totalC=0,totalCarb=0,totalAgua=0;
 let html="";
@@ -191,6 +240,7 @@ let quadril=Number(document.getElementById("quadril").value);
 let pescoco=Number(document.getElementById("pescoco").value);
 
 let imc=peso/(altura*altura);
+
 let gordura=163.205*Math.log10(cintura+quadril-pescoco)-97.684*Math.log10(altura*100)-78.387;
 let massaGorda=(peso*gordura/100).toFixed(1);
 let massaMagra=(peso-massaGorda).toFixed(1);
@@ -205,7 +255,7 @@ desenharGrafico();
 function mostrarHistorico(){
 let html="";
 historico.forEach(h=>{
-html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC:${h.imc} | ${h.gordura}% | MG:${h.massaGorda} | MM:${h.massaMagra}</div>`;
+html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h.gordura}% | Massa Gorda: ${h.massaGorda}kg | Massa Magra: ${h.massaMagra}kg</div>`;
 });
 document.getElementById("historico").innerHTML=html;
 }
@@ -215,7 +265,6 @@ function desenharGrafico(){
 let c=document.getElementById("graficoPeso");
 let ctx=c.getContext("2d");
 ctx.clearRect(0,0,c.width,c.height);
-
 let max=0;
 historico.forEach(h=>{if(h.peso>max) max=h.peso;});
 let w=c.width/historico.length;
