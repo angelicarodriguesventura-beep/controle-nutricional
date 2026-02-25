@@ -1,42 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>App Fitness Premium</title>
+<title>Controle Nutricional Premium</title>
 <style>
-body {font-family: Arial,sans-serif;background:#f0f2f5;margin:0;padding:10px;}
-.container {max-width:450px;margin:auto;background:white;padding:15px;border-radius:20px;box-shadow:0 8px 25px rgba(0,0,0,0.15);}
-h1{text-align:center;color:#222;margin-bottom:20px;}
-.tabs{display:flex;margin-bottom:10px;}
-.tabs button{flex:1;padding:12px;border:none;cursor:pointer;background:#ddd;border-radius:15px 15px 0 0;font-weight:bold;}
-.tabs .active{background:#1e90ff;color:white;}
-input,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;}
+/* --- Geral --- */
+body {font-family: 'Arial', sans-serif; background:#f0f2f5; margin:0; padding:0;}
+.container {max-width:450px; margin:auto; background:white; border-radius:25px; padding:15px; box-shadow:0 8px 25px rgba(0,0,0,0.15);}
+h1{text-align:center; color:#222; margin-bottom:20px;}
+.tabs{display:flex; margin-bottom:10px;}
+.tabs button{flex:1; padding:12px; border:none; cursor:pointer; background:#ddd; border-radius:15px 15px 0 0; font-weight:bold;}
+.tabs .active{background:#1e90ff; color:white;}
+input,select{width:100%; padding:10px; margin:5px 0; border-radius:10px; border:1px solid #ccc; box-sizing:border-box;}
 button.add{background:#1e90ff;color:white;padding:12px;border-radius:12px;width:100%;border:none;margin-top:10px;cursor:pointer;font-weight:bold;}
+
+/* --- Cards de refeição --- */
 .refeicao{background:#f7f9fc;padding:12px;border-radius:15px;margin-top:12px;box-shadow:0 3px 8px rgba(0,0,0,0.05);}
 .item{font-size:14px;margin:4px 0;}
 .small{font-size:13px;color:#555;margin:3px 0;}
-.bar-container{background:#ddd;height:14px;border-radius:10px;margin:5px 0;overflow:hidden;}
-.bar-fill{height:14px;width:0%;border-radius:10px;transition: width 0.5s;}
+
+/* --- Barras de progresso --- */
+.bar-container{background:#ddd;height:16px;border-radius:10px;margin:5px 0;overflow:hidden;}
+.bar-fill{height:16px;width:0%;border-radius:10px;transition: width 0.5s;}
 .barProteina{background:#1e90ff;}
 .barCarbo{background:#ff8c00;}
 .barCalorias{background:#32cd32;}
 .barAgua{background:#00ced1;}
+
+/* --- Autocomplete --- */
 .autocomplete-suggestions{border:1px solid #ccc;background:#fff;position:absolute;z-index:1000;max-height:150px;overflow-y:auto;border-radius:8px;}
 .autocomplete-suggestion{padding:6px;cursor:pointer;}
 .autocomplete-suggestion:hover{background:#eee;}
+
+/* --- Canvas gráfico --- */
 canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>App Fitness Premium</h1>
+<h1>Controle Nutricional Premium</h1>
+
+<!-- --- Abas --- -->
 <div class="tabs">
 <button id="tabNutri" class="active" onclick="mostrar('nutri')">Nutrição</button>
 <button id="tabCorpo" onclick="mostrar('corpo')">Corpo</button>
 </div>
 
-<!-- NUTRIÇÃO -->
+<!-- --- Aba Nutrição --- -->
 <div id="nutri">
 <h3>Metas Diárias</h3>
 <label>Proteína (g)</label>
@@ -79,7 +90,7 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 <div id="lista"></div>
 </div>
 
-<!-- CORPO -->
+<!-- --- Aba Corpo --- -->
 <div id="corpo" style="display:none;">
 <h3>Medidas Corporais</h3>
 <input type="number" id="peso" placeholder="Peso (kg)">
@@ -98,11 +109,25 @@ canvas{width:100%;max-width:100%;height:150px;margin-top:15px;}
 <h3>Evolução do Peso (kg)</h3>
 <canvas id="graficoPeso"></canvas>
 </div>
-
 </div>
 
 <script>
-// Banco detalhado (alimentos e whey)
+// --- Alternar abas ---
+function mostrar(aba){
+  if(aba==="nutri"){
+    document.getElementById("nutri").style.display="block";
+    document.getElementById("corpo").style.display="none";
+    document.getElementById("tabNutri").classList.add("active");
+    document.getElementById("tabCorpo").classList.remove("active");
+  } else{
+    document.getElementById("nutri").style.display="none";
+    document.getElementById("corpo").style.display="block";
+    document.getElementById("tabNutri").classList.remove("active");
+    document.getElementById("tabCorpo").classList.add("active");
+  }
+}
+
+// --- Banco de alimentos ---
 let banco = {
 "whey growth":{p:24,c:120,carb:3},
 "ovo cozido":{p:6,c:70,carb:0},
@@ -127,33 +152,13 @@ let banco = {
 "mamão":{p:0.6,c:43,carb:11},
 "morango":{p:0.5,c:33,carb:8},
 "manga":{p:0.8,c:60,carb:15},
-"kiwi":{p:1,c:61,carb:15},
-"brócolis":{p:3,c:34,carb:7},
-"abóbora":{p:1,c:25,carb:6},
-"espinafre":{p:3,c:23,carb:4},
-"tomate":{p:1,c:22,carb:4},
-"vagem":{p:2,c:31,carb:7},
-"couve":{p:2,c:32,carb:6},
-"pão":{p:4,c:70,carb:13},
-"biscoito":{p:2,c:50,carb:9},
-"queijo prato":{p:7,c:90,carb:1},
-"iogurte natural":{p:10,c:120,carb:8},
-"lasanha":{p:12,c:250,carb:30},
-"pizza":{p:10,c:280,carb:35},
-"suco limão":{p:0,c:10,carb:3}
+"kiwi":{p:1,c:61,carb:15}
 };
 
 let dados = JSON.parse(localStorage.getItem("nutri")) || {cafe:[],almoco:[],lanche:[],jantar:[]};
 let historico = JSON.parse(localStorage.getItem("corpo")) || [];
 
-function mostrar(aba){
-document.getElementById("nutri").style.display=aba==="nutri"?"block":"none";
-document.getElementById("corpo").style.display=aba==="corpo"?"block":"none";
-document.getElementById("tabNutri").classList.toggle("active",aba==="nutri");
-document.getElementById("tabCorpo").classList.toggle("active",aba==="corpo");
-}
-
-// Autocomplete
+// --- Autocomplete ---
 let inputAlimento = document.getElementById("alimento");
 let sugestoesDiv = document.getElementById("sugestoes");
 inputAlimento.addEventListener("input", function(){
@@ -171,7 +176,7 @@ inputAlimento.addEventListener("input", function(){
   }
 });
 
-// Adicionar alimento
+// --- Adicionar alimento ---
 function adicionar(){
 let nome=document.getElementById("alimento").value.toLowerCase();
 let qtd=Number(document.getElementById("quantidade").value)||1;
@@ -179,18 +184,16 @@ let unidade=document.getElementById("unidade").value;
 let ref=document.getElementById("refeicao").value;
 
 if(!banco[nome]){alert("Alimento não cadastrado"); return;}
-
 let base=banco[nome];
 let mult=1;
 if(unidade==="g"||unidade==="ml"){mult=qtd/100;} else mult=qtd;
-
 let item={nome,p:base.p*mult,c:base.c*mult,carb:base.carb*mult};
 dados[ref].push(item);
 localStorage.setItem("nutri",JSON.stringify(dados));
 atualizar();
 }
 
-// Atualizar totais
+// --- Atualizar totais ---
 function atualizar(){
 let totalP=0,totalC=0,totalCarb=0,totalAgua=0;
 let html="";
@@ -204,41 +207,34 @@ html+=`<div class='item'>${i.nome} | P:${i.p.toFixed(1)}g C:${i.carb.toFixed(1)}
 html+="</div>";
 }
 }
-
 document.getElementById("lista").innerHTML=html;
-
 let metaP=Number(document.getElementById("metaProteina").value);
 let metaC=Number(document.getElementById("metaCalorias").value);
 let metaCarb=Number(document.getElementById("metaCarbo").value);
 let metaAgua=Number(document.getElementById("metaAgua").value);
-
 document.getElementById("totalProteina").innerText=totalP.toFixed(1);
 document.getElementById("totalCarbo").innerText=totalCarb.toFixed(1);
 document.getElementById("totalCalorias").innerText=totalC.toFixed(1);
 document.getElementById("totalAgua").innerText=totalAgua;
-
 document.getElementById("barProteina").style.width=Math.min(totalP/metaP*100,100)+"%";
 document.getElementById("barCalorias").style.width=Math.min(totalC/metaC*100,100)+"%";
 document.getElementById("barCarbo").style.width=Math.min(totalCarb/metaCarb*100,100)+"%";
 document.getElementById("barAgua").style.width=Math.min(totalAgua/metaAgua*100,100)+"%";
 }
 
-// Corpo atualizado
+// --- Aba Corpo: salvar medidas ---
 function salvarCorpo(){
 let peso=Number(document.getElementById("peso").value);
 let altura=Number(document.getElementById("altura").value)/100;
 let cintura=Number(document.getElementById("cintura").value);
 let quadril=Number(document.getElementById("quadril").value);
 let pescoco=Number(document.getElementById("pescoco").value);
-
+if(!peso||!altura||!cintura||!quadril||!pescoco){alert("Preencha todos os campos!"); return;}
 let imc=peso/(altura*altura);
-
-// Fórmula Navy para mulheres corrigida
 let gordura=163.205*Math.log10(cintura+quadril-pescoco)-97.684*Math.log10(altura*100)-78.387;
 gordura=Math.min(Math.max(gordura,5),60);
 let massaGorda=peso*(gordura/100);
 let massaMagra=peso-massaGorda;
-
 let registro={data:new Date().toLocaleDateString(),peso,imc:imc.toFixed(1),gordura:gordura.toFixed(1),massaGorda:massaGorda.toFixed(1),massaMagra:massaMagra.toFixed(1)};
 historico.unshift(registro);
 localStorage.setItem("corpo",JSON.stringify(historico));
@@ -246,6 +242,7 @@ mostrarHistorico();
 desenharGrafico();
 }
 
+// --- Histórico Corpo ---
 function mostrarHistorico(){
 let html="";
 historico.forEach(h=>{
@@ -254,13 +251,13 @@ html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC: ${h.imc} | Gordura: ${h
 document.getElementById("historico").innerHTML=html;
 }
 
-// Gráfico simples do peso
+// --- Gráfico simples de peso ---
 function desenharGrafico(){
 let c=document.getElementById("graficoPeso");
 let ctx=c.getContext("2d");
 ctx.clearRect(0,0,c.width,c.height);
-let max=0;
-historico.forEach(h=>{if(h.peso>max) max=h.peso;});
+if(historico.length===0) return;
+let max=Math.max(...historico.map(h=>h.peso));
 let w=c.width/historico.length;
 ctx.fillStyle="#1e90ff";
 historico.forEach((h,i)=>{
