@@ -4,27 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meu App Fitness</title>
-
 <style>
-body {font-family: Arial; background:#f2f2f2; margin:0; padding:15px;}
-.container {max-width:400px; margin:auto; background:white; padding:15px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1);}
-h1{text-align:center;}
+body {font-family: Arial,sans-serif;background:#f0f2f5;margin:0;padding:10px;}
+.container {max-width:450px;margin:auto;background:white;padding:15px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+h1{text-align:center;color:#222;}
 .tabs{display:flex;margin-bottom:10px;}
-.tabs button{flex:1;padding:10px;border:none;background:#ddd;}
-.tabs .active{background:black;color:white;}
-input, select{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc;}
-button.add{background:black;color:white;padding:10px;border-radius:10px;width:100%;border:none;}
-.refeicao{background:#f7f7f7;padding:8px;border-radius:10px;margin-top:10px;}
+.tabs button{flex:1;padding:10px;border:none;cursor:pointer;background:#ddd;border-radius:10px 10px 0 0;}
+.tabs .active{background:#1e90ff;color:white;}
+input,select{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc;}
+button.add{background:#1e90ff;color:white;padding:10px;border-radius:10px;width:100%;border:none;margin-top:5px;cursor:pointer;}
+.refeicao{background:#f7f9fc;padding:8px;border-radius:10px;margin-top:10px;}
 .item{font-size:13px;margin:3px 0;}
 .small{font-size:12px;color:#555;}
+.bar-container{background:#ddd;height:12px;border-radius:10px;margin:5px 0;}
+.bar-fill{height:12px;border-radius:10px;width:0%;background:#1e90ff;}
+canvas{width:100%;max-width:100%;height:150px;margin-top:10px;}
 </style>
 </head>
-
 <body>
 <div class="container">
-
 <h1>Meu App Fitness</h1>
-
 <div class="tabs">
 <button id="tabNutri" class="active" onclick="mostrar('nutri')">Nutrição</button>
 <button id="tabCorpo" onclick="mostrar('corpo')">Corpo</button>
@@ -32,7 +31,13 @@ button.add{background:black;color:white;padding:10px;border-radius:10px;width:10
 
 <!-- NUTRIÇÃO -->
 <div id="nutri">
+<h3>Metas Diárias</h3>
+<input type="number" id="metaProteina" placeholder="Proteína (g)" value="120">
+<input type="number" id="metaCarbo" placeholder="Carboidrato (g)" value="150">
+<input type="number" id="metaCalorias" placeholder="Calorias" value="1600">
+<input type="number" id="metaAgua" placeholder="Água (ml)" value="2000">
 
+<h3>Adicionar Alimento</h3>
 <select id="refeicao">
 <option value="cafe">☀ Café da Manhã</option>
 <option value="almoco">🍛 Almoço</option>
@@ -40,20 +45,32 @@ button.add{background:black;color:white;padding:10px;border-radius:10px;width:10
 <option value="jantar">🌙 Jantar</option>
 </select>
 
-<input type="text" id="alimento" placeholder="Digite alimento (ex: ovo)">
-<input type="number" id="quantidade" placeholder="Quantidade (g ou unidade)">
+<input type="text" id="alimento" placeholder="Alimento (ex: ovo)">
+<input type="number" id="quantidade" placeholder="Quantidade">
+<select id="unidade">
+<option value="unidade">Unidade</option>
+<option value="g">Gramas (g)</option>
+<option value="ml">ML</option>
+</select>
 
 <button class="add" onclick="adicionar()">Adicionar</button>
 
-<div id="lista"></div>
-<h3>Total do Dia:</h3>
-<div id="totalDia"></div>
+<h3>Totais do Dia</h3>
+<div>Proteína: <span id="totalProteina">0</span> g</div>
+<div class="bar-container"><div id="barProteina" class="bar-fill"></div></div>
+<div>Carboidrato: <span id="totalCarbo">0</span> g</div>
+<div class="bar-container"><div id="barCarbo" class="bar-fill"></div></div>
+<div>Calorias: <span id="totalCalorias">0</span> kcal</div>
+<div class="bar-container"><div id="barCalorias" class="bar-fill"></div></div>
+<div>Água: <span id="totalAgua">0</span> ml</div>
+<div class="bar-container"><div id="barAgua" class="bar-fill"></div></div>
 
+<div id="lista"></div>
 </div>
 
 <!-- CORPO -->
 <div id="corpo" style="display:none;">
-
+<h3>Medidas Corporais</h3>
 <input type="number" id="peso" placeholder="Peso (kg)">
 <input type="number" id="altura" placeholder="Altura (cm)">
 <input type="number" id="cintura" placeholder="Cintura (cm)">
@@ -66,11 +83,14 @@ button.add{background:black;color:white;padding:10px;border-radius:10px;width:10
 <h3>Histórico:</h3>
 <div id="historico"></div>
 
+<h3>Evolução do Peso (kg)</h3>
+<canvas id="graficoPeso"></canvas>
 </div>
+
 </div>
 
 <script>
-
+// Banco de alimentos com unidade padrão
 let banco = {
   ovo:{p:6,c:70,carb:0},
   arroz:{p:2.5,c:130,carb:28},
@@ -80,33 +100,49 @@ let banco = {
   banana:{p:1,c:90,carb:23},
   whey:{p:24,c:120,carb:3},
   iogurte:{p:10,c:120,carb:8},
-  pão:{p:4,c:70,carb:13},
-  queijo:{p:7,c:90,carb:1}
+  pao:{p:4,c:70,carb:13},
+  queijo:{p:7,c:90,carb:1},
+  abobora:{p:1,c:25,carb:6},
+  mandioca:{p:1.5,c:150,carb:38},
+  espinafre:{p:3,c:23,carb:4},
+  tomate:{p:1,c:22,carb:4},
+  brocolis:{p:3,c:34,carb:7},
+  batatadoce:{p:2,c:86,carb:20},
+  suco_limão:{p:0,c:10,carb:3},
+  suco_caju:{p:0,c:45,carb:11},
+  lasanha:{p:12,c:250,carb:30},
+  pizza:{p:10,c:280,carb:35}
 };
 
 let dados = JSON.parse(localStorage.getItem("nutri")) || {cafe:[],almoco:[],lanche:[],jantar:[]};
 let historico = JSON.parse(localStorage.getItem("corpo")) || [];
 
 function mostrar(aba){
-document.getElementById("nutri").style.display = aba==="nutri"?"block":"none";
-document.getElementById("corpo").style.display = aba==="corpo"?"block":"none";
+document.getElementById("nutri").style.display=aba==="nutri"?"block":"none";
+document.getElementById("corpo").style.display=aba==="corpo"?"block":"none";
 document.getElementById("tabNutri").classList.toggle("active",aba==="nutri");
 document.getElementById("tabCorpo").classList.toggle("active",aba==="corpo");
 }
 
 function adicionar(){
-let nome=document.getElementById("alimento").value.toLowerCase();
+let nome=document.getElementById("alimento").value.toLowerCase().replace(/\s+/g,'_');
 let qtd=Number(document.getElementById("quantidade").value)||1;
+let unidade=document.getElementById("unidade").value;
 let ref=document.getElementById("refeicao").value;
 
-if(!banco[nome]){alert("Alimento não cadastrado.");return;}
+if(!banco[nome]){alert("Alimento não cadastrado"); return;}
 
 let base=banco[nome];
+let multiplicador=1;
+if(unidade==="g"){multiplicador=qtd/100;}
+else if(unidade==="ml"){multiplicador=qtd/100;}
+else{multiplicador=qtd;}
+
 let item={
 nome,
-p:base.p*qtd,
-c:base.c*qtd,
-carb:base.carb*qtd
+p:base.p*multiplicador,
+c:base.c*multiplicador,
+carb:base.carb*multiplicador
 };
 
 dados[ref].push(item);
@@ -115,29 +151,38 @@ atualizar();
 }
 
 function atualizar(){
-let totalP=0,totalC=0,totalCarb=0;
+let totalP=0,totalC=0,totalCarb=0,totalAgua=0;
 let html="";
-
 for(let r in dados){
 if(dados[r].length>0){
 html+=`<div class='refeicao'><b>${r.toUpperCase()}</b>`;
 dados[r].forEach(i=>{
-totalP+=i.p;
-totalC+=i.c;
-totalCarb+=i.carb;
-html+=`<div class='item'>${i.nome} | P:${i.p}g C:${i.carb}g Kcal:${i.c}</div>`;
+totalP+=i.p; totalC+=i.c; totalCarb+=i.carb;
+html+=`<div class='item'>${i.nome} | P:${i.p.toFixed(1)}g C:${i.carb.toFixed(1)}g Kcal:${i.c.toFixed(1)}</div>`;
 });
 html+="</div>";
 }
 }
 
 document.getElementById("lista").innerHTML=html;
-document.getElementById("totalDia").innerHTML=
-`Proteína: ${totalP.toFixed(1)}g<br>
-Carboidrato: ${totalCarb.toFixed(1)}g<br>
-Calorias: ${totalC.toFixed(1)} kcal`;
+
+let metaP=Number(document.getElementById("metaProteina").value);
+let metaC=Number(document.getElementById("metaCalorias").value);
+let metaCarb=Number(document.getElementById("metaCarbo").value);
+let metaAgua=Number(document.getElementById("metaAgua").value);
+
+document.getElementById("totalProteina").innerText=totalP.toFixed(1);
+document.getElementById("totalCarbo").innerText=totalCarb.toFixed(1);
+document.getElementById("totalCalorias").innerText=totalC.toFixed(1);
+document.getElementById("totalAgua").innerText=totalAgua;
+
+document.getElementById("barProteina").style.width=Math.min(totalP/metaP*100,100)+"%";
+document.getElementById("barCalorias").style.width=Math.min(totalC/metaC*100,100)+"%";
+document.getElementById("barCarbo").style.width=Math.min(totalCarb/metaCarb*100,100)+"%";
+document.getElementById("barAgua").style.width=Math.min(totalAgua/metaAgua*100,100)+"%";
 }
 
+// Corpo
 function salvarCorpo(){
 let peso=Number(document.getElementById("peso").value);
 let altura=Number(document.getElementById("altura").value)/100;
@@ -147,31 +192,43 @@ let pescoco=Number(document.getElementById("pescoco").value);
 
 let imc=peso/(altura*altura);
 let gordura=163.205*Math.log10(cintura+quadril-pescoco)-97.684*Math.log10(altura*100)-78.387;
+let massaGorda=(peso*gordura/100).toFixed(1);
+let massaMagra=(peso-massaGorda).toFixed(1);
 
-let registro={
-data:new Date().toLocaleDateString(),
-peso,
-imc:imc.toFixed(1),
-gordura:gordura.toFixed(1)
-};
-
+let registro={data:new Date().toLocaleDateString(),peso,imc:imc.toFixed(1),gordura:gordura.toFixed(1),massaGorda,massaMagra};
 historico.unshift(registro);
 localStorage.setItem("corpo",JSON.stringify(historico));
 mostrarHistorico();
+desenharGrafico();
 }
 
 function mostrarHistorico(){
 let html="";
 historico.forEach(h=>{
-html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC ${h.imc} | ${h.gordura}%</div>`;
+html+=`<div class='small'>${h.data} - ${h.peso}kg | IMC:${h.imc} | ${h.gordura}% | MG:${h.massaGorda} | MM:${h.massaMagra}</div>`;
 });
 document.getElementById("historico").innerHTML=html;
 }
 
+// Gráfico simples do peso
+function desenharGrafico(){
+let c=document.getElementById("graficoPeso");
+let ctx=c.getContext("2d");
+ctx.clearRect(0,0,c.width,c.height);
+
+let max=0;
+historico.forEach(h=>{if(h.peso>max) max=h.peso;});
+let w=c.width/historico.length;
+ctx.fillStyle="#1e90ff";
+historico.forEach((h,i)=>{
+let hgt=(h.peso/max)*c.height;
+ctx.fillRect(i*w+5,c.height-hgt,w-10,hgt);
+});
+}
+
 atualizar();
 mostrarHistorico();
-
+desenharGrafico();
 </script>
-
 </body>
 </html>
