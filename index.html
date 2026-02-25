@@ -2,10 +2,202 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Controle Nutricional</title>
+  <title>Meu App Fitness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      background: #ddd;
+    }
+
+    .tabs button.active {
+      background: black;
+      color: white;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button.add {
+      background: black;
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      width: 100%;
+      border: none;
+      margin-top: 5px;
+    }
+
+    .item {
+      background: #f7f7f7;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+
+    .bar {
+      height: 10px;
+      background: #ddd;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bar-fill {
+      height: 10px;
+      background: black;
+      border-radius: 10px;
+      width: 0%;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Controle Nutricional</h1>
-  <p>Seu app está funcionando 🎉</p>
+
+<div class="container">
+  <h1>Meu App Fitness</h1>
+
+  <div class="tabs">
+    <button id="tabNutri" class="active" onclick="mostrar('nutri')">Nutrição</button>
+    <button id="tabCorpo" onclick="mostrar('corpo')">Corpo</button>
+  </div>
+
+  <!-- NUTRIÇÃO -->
+  <div id="nutri">
+
+    <input type="number" id="metaProteina" placeholder="Meta Proteína (g)" value="120">
+    <input type="number" id="metaCalorias" placeholder="Meta Calorias" value="1600">
+    <input type="number" id="metaCarbo" placeholder="Meta Carbo (g)" value="150">
+
+    <div>Proteína: <span id="totalProteina">0</span></div>
+    <div class="bar"><div id="barProteina" class="bar-fill"></div></div>
+
+    <div>Calorias: <span id="totalCalorias">0</span></div>
+    <div class="bar"><div id="barCalorias" class="bar-fill"></div></div>
+
+    <div>Carboidratos: <span id="totalCarbo">0</span></div>
+    <div class="bar"><div id="barCarbo" class="bar-fill"></div></div>
+
+    <input type="text" id="nome" placeholder="Nome do alimento">
+    <input type="number" id="proteina" placeholder="Proteína (g)">
+    <input type="number" id="calorias" placeholder="Calorias">
+    <input type="number" id="carbo" placeholder="Carboidratos (g)">
+
+    <button class="add" onclick="adicionar()">Adicionar</button>
+
+    <div id="lista"></div>
+  </div>
+
+  <!-- CORPO -->
+  <div id="corpo" style="display:none;">
+    <input type="number" id="peso" placeholder="Peso (kg)">
+    <input type="number" id="altura" placeholder="Altura (cm)">
+    <input type="number" id="cintura" placeholder="Cintura (cm)">
+    <input type="number" id="quadril" placeholder="Quadril (cm)">
+    <input type="number" id="pescoco" placeholder="Pescoço (cm)">
+
+    <button class="add" onclick="calcularCorpo()">Calcular</button>
+
+    <div id="resultadoCorpo"></div>
+  </div>
+
+</div>
+
+<script>
+let alimentos = [];
+
+function mostrar(aba){
+  document.getElementById("nutri").style.display = aba === "nutri" ? "block" : "none";
+  document.getElementById("corpo").style.display = aba === "corpo" ? "block" : "none";
+
+  document.getElementById("tabNutri").classList.toggle("active", aba==="nutri");
+  document.getElementById("tabCorpo").classList.toggle("active", aba==="corpo");
+}
+
+function adicionar(){
+  let nome = document.getElementById("nome").value;
+  let p = Number(document.getElementById("proteina").value) || 0;
+  let c = Number(document.getElementById("calorias").value) || 0;
+  let carb = Number(document.getElementById("carbo").value) || 0;
+
+  alimentos.push({nome,p,c,carb});
+  atualizar();
+}
+
+function atualizar(){
+  let totalP = 0, totalC = 0, totalCarb = 0;
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  alimentos.forEach(a=>{
+    totalP += a.p;
+    totalC += a.c;
+    totalCarb += a.carb;
+
+    lista.innerHTML += `<div class="item">${a.nome} | P:${a.p}g C:${a.carb}g Kcal:${a.c}</div>`;
+  });
+
+  document.getElementById("totalProteina").innerText = totalP;
+  document.getElementById("totalCalorias").innerText = totalC;
+  document.getElementById("totalCarbo").innerText = totalCarb;
+
+  let metaP = document.getElementById("metaProteina").value;
+  let metaC = document.getElementById("metaCalorias").value;
+  let metaCarb = document.getElementById("metaCarbo").value;
+
+  document.getElementById("barProteina").style.width = (totalP/metaP*100)+"%";
+  document.getElementById("barCalorias").style.width = (totalC/metaC*100)+"%";
+  document.getElementById("barCarbo").style.width = (totalCarb/metaCarb*100)+"%";
+}
+
+function calcularCorpo(){
+  let peso = Number(document.getElementById("peso").value);
+  let altura = Number(document.getElementById("altura").value)/100;
+  let cintura = Number(document.getElementById("cintura").value);
+  let quadril = Number(document.getElementById("quadril").value);
+  let pescoco = Number(document.getElementById("pescoco").value);
+
+  let imc = peso/(altura*altura);
+
+  let gordura = 163.205 * Math.log10(cintura + quadril - pescoco) - 97.684 * Math.log10(altura*100) - 78.387;
+
+  document.getElementById("resultadoCorpo").innerHTML =
+    `IMC: ${imc.toFixed(1)}<br>% Gordura estimado: ${gordura.toFixed(1)}%`;
+}
+</script>
+
 </body>
 </html>
